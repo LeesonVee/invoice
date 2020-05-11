@@ -5,7 +5,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
   <properties>
-      <spring.version>3.2.1.RELEASE</spring.version>
+      <spring.version>4.0.4.RELEASE</spring.version>
   </properties>
   <dependencies>
        <dependency>
@@ -23,5 +23,31 @@
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
+      <dependency>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+          <version>2.5</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+          <version>2.9.4</version>
+      </dependency>
+      <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+          <version>2.9.4</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-httpclient</groupId>
+          <artifactId>commons-httpclient</artifactId>
+          <version>3.1</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+          <version>2.6</version>
+      </dependency>
   </dependencies>
 </project>
