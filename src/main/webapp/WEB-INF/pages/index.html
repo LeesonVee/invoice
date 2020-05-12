@@ -9,20 +9,129 @@
     <script src="/invoice/lib/vue2/vue.js"></script>
     <script src="/invoice/lib/jquery/jquery-2-1-4-min.js"></script>
     <script src="/invoice/lib/eleme/element-min.js"></script>
+    <style type="text/css">
+        html,head,body{
+            margin: 0px;
+            padding: 0px;
+        }
+        .winDiv{
+            margin: 0px;
+            padding: 0px;
+        }
+        .el-header, .el-footer {
+            background-color: #B3C0D1;
+            color: #333;
+            text-align: center;
+            line-height: 60px;
+            padding: 0;
+        }
+
+        .el-aside {
+            background-color: #D3DCE6;
+            color: #333;
+            text-align: center;
+            line-height: 200px;
+        }
+
+        .el-main {
+            background-color: #E9EEF3;
+            color: #333;
+            text-align: center;
+            line-height: 160px;
+            padding: 0;
+        }
+        .time {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .bottom {
+            margin-top: 13px;
+            line-height: 12px;
+        }
+
+        .button {
+            padding: 0;
+            float: right;
+        }
+
+        .image {
+            width: 100%;
+            display: block;
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+        div .item{
+            width: 100%;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<div id="app">
-
+<div id="app" class="winDiv">
+    <el-container :style="{height:curHeight+'px'}">
+        <el-header>
+            <el-row>
+                <el-col :span="6"><div class="item">一周</div></el-col>
+                <el-col :span="6"><div class="item">一个月</div></el-col>
+                <el-col :span="6"><div class="item">三个月</div></el-col>
+                <el-col :span="6"><div class="item">更多</div></el-col>
+            </el-row>
+        </el-header>
+        <el-main>
+            <el-row>
+                <div>
+                    <el-col :span="24">
+                        <el-card :body-style="{ padding: '0px' }">
+                            <div style="padding: 14px;">
+                                <span>好吃的汉堡</span>
+                                <div class="bottom clearfix">
+                                    <time class="time">{{ currentDate }}</time>
+                                    <el-button type="text" class="button">操作按钮</el-button>
+                                </div>
+                            </div>
+                        </el-card>
+                    </el-col>
+                </div>
+            </el-row>
+            <div></div>
+        </el-main>
+    </el-container>
+<!--{{curHeight}}-->
 </div>
 <script type="text/javascript">
     new Vue({
         el: '#app',
         data: {
-            msg:123
+            msg:123,
+            curHeight:500,
+            currentDate:new Date()
+        },
+        mounted(){
+            this.beforeMountHeight()
         },
         methods:{
-
+            beforeMountHeight:function(height){
+                height = height||0;
+                let h = document.documentElement.clientHeight || document.body.clientHeight;
+                this.curHeight = h-height;
+            },
         }
+//            beforeMount(height) {
+//
+//                var h = document.documentElement.clientHeight || document.body.clientHeight;
+//
+//                this.curHeight =h - height; //减去页面上固定高度height
+//
+//            }
     });
 </script>
 </body>
