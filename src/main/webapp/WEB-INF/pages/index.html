@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>首页</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi" />
+    <title>首页</title>
     <!-- 引入样式 -->
     <link rel="stylesheet" href="/invoice/lib/eleme/element-min.css">
+
     <!-- 引入组件库 -->
     <script src="/invoice/lib/vue2/vue.js"></script>
     <script src="/invoice/lib/jquery/jquery-2-1-4-min.js"></script>
@@ -18,6 +20,10 @@
             margin: 0px;
             padding: 0px;
         }
+        .el-container .box{
+            height:81px;
+            border-bottom: 1px solid #696976;
+        }
         .el-header, .el-footer {
             background-color: #B3C0D1;
             color: #333;
@@ -27,52 +33,54 @@
         }
 
         .el-aside {
-            background-color: #D3DCE6;
             color: #333;
             text-align: center;
-            line-height: 200px;
+            line-height: 80px;
         }
 
         .el-main {
             background-color: #E9EEF3;
             color: #333;
             text-align: center;
-            line-height: 160px;
             padding: 0;
         }
-        .time {
-            font-size: 13px;
-            color: #999;
+        .el-row .nomal{
+            height:25px;
+            line-height:25px
         }
-
-        .bottom {
-            margin-top: 13px;
-            line-height: 12px;
+        .el-row .big{
+            font-weight: bold;
+            font-size: 18px;
+            color: #ff9913;
+            height:30px;
+            line-height:30px;
         }
-
-        .button {
-            padding: 0;
-            float: right;
+        .amount{
+            text-align: right;
+            padding-right: 5px;
         }
-
-        .image {
-            width: 100%;
-            display: block;
+        .colors{
+            color: #a9a6ae;
         }
-
-        .clearfix:before,
-        .clearfix:after {
-            display: table;
-            content: "";
-        }
-
-        .clearfix:after {
-            clear: both
+        .font-weight{
+            font-weight: bold;
         }
         div .item{
             width: 100%;
             cursor: pointer;
+            border: 1px solid #696976;
+            border-top:none;
+            border-right: none;
         }
+        .circle{
+            width: 15px;
+            height: 15px;
+            background-color: red;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
     </style>
 </head>
 <body>
@@ -80,32 +88,35 @@
     <el-container :style="{height:curHeight+'px'}">
         <el-header>
             <el-row>
-                <el-col :span="6"><div class="item">一周</div></el-col>
-                <el-col :span="6"><div class="item">一个月</div></el-col>
-                <el-col :span="6"><div class="item">三个月</div></el-col>
-                <el-col :span="6"><div class="item">更多</div></el-col>
+                <el-col :span="6"><div class="item" @click="queryInvoice('1')">一周</div></el-col>
+                <el-col :span="6"><div class="item" @click="queryInvoice('2')">一个月</div></el-col>
+                <el-col :span="6"><div class="item" @click="queryInvoice('3')">六个月</div></el-col>
+                <el-col :span="6"><div class="item" @click="queryInvoice('4')">更多</div></el-col>
             </el-row>
         </el-header>
         <el-main>
-            <el-row>
-                <div>
-                    <el-col :span="24">
-                        <el-card :body-style="{ padding: '0px' }">
-                            <div style="padding: 14px;">
-                                <span>好吃的汉堡</span>
-                                <div class="bottom clearfix">
-                                    <time class="time">{{ currentDate }}</time>
-                                    <el-button type="text" class="button">操作按钮</el-button>
-                                </div>
-                            </div>
-                        </el-card>
-                    </el-col>
-                </div>
-            </el-row>
-            <div></div>
+            <el-container class="box" v-for="item in invoiceData">
+                <el-aside width="60px"><div class="circle"></div></el-aside>
+                <el-main style="text-align: left;">
+                    <el-row>
+                        <div class="nomal"><el-col :span="24"><span class="font-weight">票据类型：</span>{{item.TRADETYPE}}</el-col></div>
+                    </el-row>
+                    <el-row >
+                        <div class="big">
+                            <el-col :span="12">票据金额</el-col>
+                            <el-col :span="12" class="amount">￥{{item.AMOUNT}}</el-col>
+                        </div>
+                    </el-row>
+                    <el-row>
+                        <div class="nomal colors">
+                            <el-col :span="24"><span style="font-weight: bold;">交易日期：</span><span style="font-size: 13px;">{{item.TRADETIME}}</span></el-col>
+                        </div>
+                    </el-row>
+                </el-main>
+            </el-container>
+
         </el-main>
     </el-container>
-<!--{{curHeight}}-->
 </div>
 <script type="text/javascript">
     new Vue({
@@ -113,7 +124,18 @@
         data: {
             msg:123,
             curHeight:500,
-            currentDate:new Date()
+            currentDate:new Date(),
+            starttime:'',
+            endtime:'',
+            invoiceData:[{
+                TRADETYPE:'住院',
+                TRADETIME:'2020年05月09日 13:44:48',
+                AMOUNT:35102.08,
+            },{
+                TRADETYPE:'住院',
+                TRADETIME:'2020年05月09日 13:44:48',
+                AMOUNT:35102.08,
+            }]
         },
         mounted(){
             this.beforeMountHeight()
@@ -124,14 +146,70 @@
                 let h = document.documentElement.clientHeight || document.body.clientHeight;
                 this.curHeight = h-height;
             },
+            queryInvoice:function(type){
+                debugger;
+                switch (type){
+                    case '1':
+                        this.setDateRange(7);
+                        break;
+                    case '2':
+                        this.setMonth(1);
+                        break;
+                    case '3':
+                        this.setMonth(6);
+                        break;
+                    case '4':break;
+                    default:break;
+                }
+                console.info(this.starttime);
+                console.info(this.endtime);
+            },
+            setDateRange:function(n){
+                var date = this.currentDate;
+                var year = date.getFullYear();
+                var month = (date.getMonth()+1);
+                var day = date.getDate();
+                this.endtime=this.dateToString(year,month,day);
+                date.setDate(date.getDate()-n);
+                year = date.getFullYear();
+                month = (date.getMonth()+1);
+                day = date.getDate();
+                this.starttime=this.dateToString(year,month,day,true);
+
+            },
+            setMonth:function(n){
+                var date = this.currentDate;
+                var year = date.getFullYear();
+                var month = (date.getMonth()+1);
+                var day = date.getDate();
+                this.endtime=this.dateToString(year,month,day);
+                if(month>n){
+                    this.starttime=this.dateToString(year,month-n,day,true);
+                }else{
+                    this.starttime=this.dateToString(year-1,12+month-n,day,true);
+                }
+            },
+            dateToString:function(year,month,day,isStart){
+                var time=year+'-';
+                if(month<10){
+                    time+='0'+month+'-';
+                }else{
+                    time+=month+'-';
+                }
+                if(day<=10){
+                    time+='0'+day;
+                }else{
+                    time+=day;
+                }
+                if(isStart){
+                    time+= ' 00:00:00';
+                }else{
+                    time+= ' 23:59:59';
+                }
+                return time;
+            }
+
         }
-//            beforeMount(height) {
-//
-//                var h = document.documentElement.clientHeight || document.body.clientHeight;
-//
-//                this.curHeight =h - height; //减去页面上固定高度height
-//
-//            }
     });
 </script>
 </body>
