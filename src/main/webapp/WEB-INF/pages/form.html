@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi" />
+    <title>我的票据</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/invoice/lib/eleme/element-min.css">
+
+    <!-- 引入组件库 -->
+    <script src="/invoice/lib/vue2/vue.js"></script>
+    <script src="/invoice/lib/jquery/jquery-2-1-4-min.js"></script>
+    <script src="/invoice/lib/eleme/element-min.js"></script>
+    <style type="text/css">
+        html,head,body{
+            margin: 0px;
+            padding: 0px;
+            background: #E9EEF3;
+        }
+        .winDiv{
+            margin: 0px;
+            padding: 0px;
+        }
+        .el-container .box{
+            height:81px;
+            border-bottom: 1px solid #696976;
+            cursor: pointer;
+        }
+        .el-header, .el-footer {
+            background-color: #B3C0D1;
+            color: #333;
+            text-align: center;
+            line-height: 60px;
+            padding: 0;
+        }
+
+        .el-aside {
+            color: #333;
+            text-align: center;
+            line-height: 80px;
+        }
+
+        .el-main {
+            background-color: #E9EEF3;
+            color: #333;
+            text-align: center;
+            padding: 0;
+        }
+        .el-row .nomal{
+            height:25px;
+            line-height:25px
+        }
+        .el-row .big{
+            font-weight: bold;
+            font-size: 18px;
+            color: #ff9913;
+            height:30px;
+            line-height:30px;
+        }
+        .amount{
+            text-align: right;
+            padding-right: 5px;
+        }
+        .colors{
+            color: #a9a6ae;
+        }
+        .font-weight{
+            font-weight: bold;
+        }
+        div .item{
+            width: 100%;
+            cursor: pointer;
+            border: 1px solid #696976;
+            border-top:none;
+            border-right: none;
+        }
+        .circle{
+            width: 15px;
+            height: 15px;
+            background-color: red;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app" class="winDiv">
+    <el-row>
+        <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+            <el-col style="padding-top:250px;padding-right: 50px;">
+                <!--<el-form-item label="类型">-->
+                    <!--<el-radio-group v-model="ruleForm.type" @change="changeType">-->
+                        <!--<el-radio label="1">卡号</el-radio>-->
+                        <!--<el-radio label="2">身份证</el-radio>-->
+                    <!--</el-radio-group>-->
+                <!--</el-form-item>-->
+                <!--<template v-if="typeNum=='1'">-->
+                    <!--<el-form-item label="卡号" prop="cardNo">-->
+                        <!--<el-input v-model="ruleForm.cardNo"></el-input>-->
+                    <!--</el-form-item>-->
+                <!--</template>-->
+                <template v-if="typeNum=='1'">
+                    <el-form-item label="姓名" prop="name">
+                        <el-input v-model="ruleForm.name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="身份证" prop="idCardNo">
+                        <el-input v-model="ruleForm.idCardNo"></el-input>
+                    </el-form-item>
+                </template>
+            </el-col>
+        </el-form>
+    </el-row>
+    <el-row><el-col :span="24" style="text-align: center;"><el-button type="primary" style="width: 80%;">查询</el-button></el-col></el-row>
+
+</div>
+<script type="text/javascript">
+    new Vue({
+        el: '#app',
+        data: {
+            msg:123,
+            typeNum:'1',
+            form:{
+                name:''
+            },
+            ruleForm: {
+                name:'',
+                cardNo: '',
+                idCardNo: '',
+                type:'1',
+            },
+            rules: {
+                name: [
+                    { required: true, message: '卡号', trigger: 'blur' },
+                    { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+                ],
+                idCardNo: [
+                    { required: true, message: '身份证', trigger: 'blur' },
+                    { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+                ]
+            }
+        },
+        methods: {
+            changeType:function(val){
+                this.typeNum=val;
+            },
+            submitForm:function(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        alert('submit!');
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            resetForm:function(formName) {
+                this.$refs[formName].resetFields();
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi" />
-    <title>首页</title>
+    <title>我的票据</title>
     <!-- 引入样式 -->
     <link rel="stylesheet" href="/invoice/lib/eleme/element-min.css">
 
@@ -23,6 +23,7 @@
         .el-container .box{
             height:81px;
             border-bottom: 1px solid #696976;
+            cursor: pointer;
         }
         .el-header, .el-footer {
             background-color: #B3C0D1;
@@ -119,6 +120,33 @@
     </el-container>
 </div>
 <script type="text/javascript">
+    var datas = {
+        strInJson:'{"head":{"tradetime": "2020-05-09 13:44:48","tradename": "JYMXXX","chanel":"3"},"body":{"cardno": "Z00001946","idcardno": "330328197302194420","starttime": "2020-05-12 12:12:48","endtime":"2020-05-14 23:59:59"}}'
+    }
+    $.post("http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData",datas,
+        function(data){
+            //$('#msg').html("please enter the email!");
+            alert(data);
+        },"text");//这里返回的类型有：json,html,xml,text
+
+
+
+//$.ajax({
+//    //几个参数需要注意一下
+//    type: "POST",//方法类型
+//    dataType: "application/x-www-form-urlencoded",//预期服务器返回的数据类型
+//    url: "http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData" ,//url
+//    data: data,
+//    success: function (result) {
+//        console.log(result);//打印服务端返回的数据(调试用)
+//        if (result.resultCode == 200) {
+//            alert("SUCCESS");
+//        };
+//    },
+//    error : function() {
+//        alert("异常！");
+//    }
+//});
     new Vue({
         el: '#app',
         data: {
@@ -128,13 +156,13 @@
             starttime:'',
             endtime:'',
             invoiceData:[{
-                TRADETYPE:'住院',
-                TRADETIME:'2020年05月09日 13:44:48',
-                AMOUNT:35102.08,
+                TRADETYPE:'门诊',
+                TRADETIME:'2020年05月14日 13:44:48',
+                AMOUNT:18,
             },{
-                TRADETYPE:'住院',
-                TRADETIME:'2020年05月09日 13:44:48',
-                AMOUNT:35102.08,
+                TRADETYPE:'门诊',
+                TRADETIME:'2020年05月09日 09:23:56',
+                AMOUNT:108,
             }]
         },
         mounted(){

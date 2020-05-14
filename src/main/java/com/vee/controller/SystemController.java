@@ -39,6 +39,14 @@ public class SystemController extends JSONOutputMVCConroller {
 		}
 		return "layout";
 	}
+	@RequestMapping(value="/jumpIndex",method = RequestMethod.GET)
+	public String jumpIndex(HttpServletRequest req,HttpServletResponse res,ModelMap model) {
+//		if(!checkBrowser(req)){
+//			System.out.println("It's not weixin's browser");
+//			return "illegal";
+//		}
+		return "form";
+	}
 	/**
 	 * 检验是否为微信浏览器
 	 * @author leeson
