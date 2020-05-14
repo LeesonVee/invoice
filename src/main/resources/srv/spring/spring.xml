@@ -25,7 +25,7 @@
     <!--用于支持Servlet、JSP视图解析-->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix"><value>/WEB-INF/pages/</value></property>
-        <property name="suffix"><value>.html</value></property>
+        <property name="suffix"><value>.jsp</value></property>
     </bean>
 
     

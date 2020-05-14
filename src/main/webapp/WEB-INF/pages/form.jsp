@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+%>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -15,11 +17,16 @@
         html,head,body{
             margin: 0px;
             padding: 0px;
-            background: #E9EEF3;
+
         }
         .winDiv{
             margin: 0px;
             padding: 0px;
+            width:100%;
+            height:100%;
+            background: url("/invoice/lib/img/bg.png") no-repeat;
+            background-size:100% 100%;
+            background-attachment:fixed;
         }
         .el-container .box{
             height:81px;
@@ -88,7 +95,7 @@
 <body>
 <div id="app" class="winDiv">
     <el-row>
-        <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form :model="ruleForm" ref="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
             <el-col style="padding-top:250px;padding-right: 50px;">
                 <!--<el-form-item label="类型">-->
                     <!--<el-radio-group v-model="ruleForm.type" @change="changeType">-->
@@ -112,7 +119,7 @@
             </el-col>
         </el-form>
     </el-row>
-    <el-row><el-col :span="24" style="text-align: center;"><el-button type="primary" style="width: 80%;">查询</el-button></el-col></el-row>
+    <el-row><el-col :span="24" style="text-align: center;"><el-button type="primary" style="width: 80%;" @click="queryInvoiceByIdCard('ruleForm')">查询</el-button></el-col></el-row>
 
 </div>
 <script type="text/javascript">
@@ -121,9 +128,6 @@
         data: {
             msg:123,
             typeNum:'1',
-            form:{
-                name:''
-            },
             ruleForm: {
                 name:'',
                 cardNo: '',
@@ -132,12 +136,12 @@
             },
             rules: {
                 name: [
-                    { required: true, message: '卡号', trigger: 'blur' },
-                    { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+                    { required: true, message: '请输入姓名', trigger: 'blur' },
+                    { min: 3, max: 5, message: '长度在 3 到 10 个字符', trigger: 'blur' }
                 ],
                 idCardNo: [
-                    { required: true, message: '身份证', trigger: 'blur' },
-                    { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+                    { required: true, message: '请输入身份证', trigger: 'blur' },
+                    { min: 18, max: 18, message: '请输入18位的身份证信息', trigger: 'blur' }
                 ]
             }
         },
@@ -157,6 +161,39 @@
             },
             resetForm:function(formName) {
                 this.$refs[formName].resetFields();
+            },
+            queryInvoiceByIdCard:function(formName){
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        window.location.href='/invoice/index.html?idCardNo='+this.ruleForm.idCardNo;
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+
+            },
+            myMessage:function(message,type){
+                this.$message({
+                    showClose: false,
+                    message: message,
+                    type: type
+                });
+            },
+            requestData:function(params){
+                $.ajax({
+                    url: "/invoice/index.html",
+                    dataType: "html",
+                    data:params,
+                    success: function(data) {//返回页面内容
+                        debugger;
+                    },
+                    error:function(XMLHttpRequest, strError, strObj){
+                        console.log("XMLHttpRequest:"+XMLHttpRequest);
+                        console.log("strError:"+strError);
+                        console.log("strObj:"+strObj);
+                    }
+                })
             }
         }
     });
