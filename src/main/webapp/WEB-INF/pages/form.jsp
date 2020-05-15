@@ -24,6 +24,13 @@
             padding: 0px;
             width:100%;
             height:100%;
+            background-color: #E9EEF3;
+        }
+        .winDiv .bgImg{
+            margin: 0px;
+            padding: 0px;
+            width:100%;
+            height:100%;
             background: url("/invoice/lib/img/bg.png") no-repeat;
             background-size:100% 100%;
             background-attachment:fixed;
@@ -89,43 +96,45 @@
             display: inline-block;
             margin-right: 5px;
         }
-
+        .remark_top{
+            padding-top: 20px;
+        }
+        .remark{
+            padding-top: 2px;
+            font-size: 10px;
+            /*color: #D6D6D6;*/
+        }
     </style>
 </head>
 <body>
 <div id="app" class="winDiv">
+    <el-row style="height:30%;"><div class="bgImg"><el-col :span="24">&nbsp;</el-col></div></el-row>
     <el-row>
         <el-form :model="ruleForm" ref="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
-            <el-col style="padding-top:250px;padding-right: 50px;">
-                <!--<el-form-item label="类型">-->
-                    <!--<el-radio-group v-model="ruleForm.type" @change="changeType">-->
-                        <!--<el-radio label="1">卡号</el-radio>-->
-                        <!--<el-radio label="2">身份证</el-radio>-->
-                    <!--</el-radio-group>-->
-                <!--</el-form-item>-->
-                <!--<template v-if="typeNum=='1'">-->
-                    <!--<el-form-item label="卡号" prop="cardNo">-->
-                        <!--<el-input v-model="ruleForm.cardNo"></el-input>-->
-                    <!--</el-form-item>-->
-                <!--</template>-->
+            <el-col style="padding-top:10px;padding-right: 50px;">
                 <template v-if="typeNum=='1'">
-                    <el-form-item label="姓名" prop="name">
-                        <el-input v-model="ruleForm.name"></el-input>
-                    </el-form-item>
                     <el-form-item label="身份证" prop="idCardNo">
                         <el-input v-model="ruleForm.idCardNo"></el-input>
+                    </el-form-item>
+                    <el-form-item label="姓　名" prop="name">
+                        <el-input v-model="ruleForm.name"></el-input>
                     </el-form-item>
                 </template>
             </el-col>
         </el-form>
     </el-row>
     <el-row><el-col :span="24" style="text-align: center;"><el-button type="primary" style="width: 80%;" @click="queryInvoiceByIdCard('ruleForm')">查询</el-button></el-col></el-row>
-
+    <el-row class="remark remark_top"><el-col :span="24">1.系统提供本院自2020年5月22日之后的电子票据查询功能。&nbsp;&nbsp;</el-col></el-row>
+    <el-row class="remark"><el-col :span="24">2.如需查验电子票据,可通过财政部财政电子票据查验平台http://pjcy.mof.gov.cn/进行。</el-col></el-row>
+    <el-row class="remark"><el-col :span="24">3.也可通过关注健康普陀公众号查询电子票据。&nbsp;&nbsp;</el-col></el-row>
 </div>
 <script type="text/javascript">
     new Vue({
         el: '#app',
         data: {
+            imgHeight:300,
+            curHeight:300,
+            curWidth:200,
             msg:123,
             typeNum:'1',
             ruleForm: {
@@ -145,6 +154,12 @@
                 ]
             }
         },
+        created(){
+            this.beforeMountHeight()
+        },
+//        mounted(){
+//            this.beforeMountHeight()
+//        },
         methods: {
             changeType:function(val){
                 this.typeNum=val;
@@ -194,7 +209,13 @@
                         console.log("strObj:"+strObj);
                     }
                 })
-            }
+            },
+            beforeMountHeight:function(){
+                let h = document.documentElement.clientHeight || document.body.clientHeight;
+                let w = document.documentElement.clientWidth || document.body.clientWidth;
+                this.curHeight = h*0.5;
+                this.curWidth=w;
+            },
         }
     });
 </script>
