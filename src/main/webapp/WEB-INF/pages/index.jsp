@@ -89,11 +89,16 @@
     <el-container :style="{height:curHeight+'px'}">
         <el-header>
             <el-row>
-                <el-col :span="6"><div class="item" @click="queryInvoice('1')">一周</div></el-col>
-                <el-col :span="6"><div class="item" @click="queryInvoice('2')">一个月</div></el-col>
-                <el-col :span="6"><div class="item" @click="queryInvoice('3')">六个月</div></el-col>
-                <el-col :span="6"><div class="item" @click="queryInvoice('4')">更多</div></el-col>
+                <el-col :span="8"><div class="item" @click="queryInvoice('1')">一周</div></el-col>
+                <el-col :span="8"><div class="item" @click="queryInvoice('2')">一个月</div></el-col>
+                <el-col :span="8"><div class="item" @click="queryInvoice('3')">三个月</div></el-col>
             </el-row>
+            <%--<el-row>--%>
+                <%--<el-col :span="6"><div class="item" @click="queryInvoice('1')">一周</div></el-col>--%>
+                <%--<el-col :span="6"><div class="item" @click="queryInvoice('2')">一个月</div></el-col>--%>
+                <%--<el-col :span="6"><div class="item" @click="queryInvoice('3')">三个月</div></el-col>--%>
+                <%--<el-col :span="6"><div class="item" @click="queryInvoice('13')">更多</div></el-col>--%>
+            <%--</el-row>--%>
         </el-header>
         <el-main>
             <div v-for="item in invoiceData" @click="watchInvoice(item)">
@@ -171,7 +176,6 @@
                 this.curHeight = h-height;
             },
             queryInvoice:function(type){
-
                 switch (type){
                     case '1':
                         this.setDateRange(7);
@@ -180,27 +184,28 @@
                         this.setMonth(1);
                         break;
                     case '3':
+                        this.setMonth(3);
+                        break;
+                    case '6':
                         this.setMonth(6);
                         break;
-                    case '4':
+                    case '13':
                         this.form.dateRange='';
                         this.dialogVisible = true;
                         break;
                     default:break;
                 }
-                if(type!='4'){
+                if(type!='13'){
                     this.loading = true;
                     var params={
                         starttime:this.starttime,
                         endtime:this.endtime
                     }
-                    debugger;
                     this.requestData(params);
                 }
 
             },
             watchInvoice:function(item){
-                debugger;
                 this.loading = true;
                 var me= this;
                 $.ajax({
@@ -250,7 +255,7 @@
                 })
             },
             setDateRange:function(n){
-                var date = this.currentDate;
+                var date = new Date();
                 var year = date.getFullYear();
                 var month = (date.getMonth()+1);
                 var day = date.getDate();
@@ -263,7 +268,7 @@
 
             },
             setMonth:function(n){
-                var date = this.currentDate;
+                var date = new Date();
                 var year = date.getFullYear();
                 var month = (date.getMonth()+1);
                 var day = date.getDate();
@@ -281,7 +286,7 @@
                 }else{
                     time+=month+'-';
                 }
-                if(day<=10){
+                if(day<10){
                     time+='0'+day;
                 }else{
                     time+=day;

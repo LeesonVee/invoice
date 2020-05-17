@@ -69,6 +69,9 @@ public class TestUtil {
     }
 
     public static void main(String[] args) {
-        TestUtil.method1();
+//        TestUtil.method1();
+        String aa = "MZ123345";
+        System.out.println(aa.substring(0,2));
+        System.out.println(aa.substring(2,aa.length()));
     }
 }

@@ -27,13 +27,13 @@ public class HttpUtils {
             con.setDoInput(true); // 是否有入参
             con.setDoOutput(true); // 是否有出参
             con.setRequestMethod("POST"); // 设置请求方式
-            con.setRequestProperty("content-type", "application/x-www-form-urlencoded");
+            con.setRequestProperty("content-type", "application/x-www-form-urlencoded;charset=utf-8");
             con.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
             con.setConnectTimeout(5 * 1000);
 
             // 4，通过流的方式将请求体发送出去：
             OutputStream out = con.getOutputStream();
-            byte[] data = param.getBytes();
+            byte[] data = param.getBytes("UTF-8");
             out.write(data,0,data.length);
             out.close();
             // 5，服务端返回正常：

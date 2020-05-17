@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -21,7 +20,7 @@
             padding: 0px;
         }
         .el-container .box{
-            height:81px;
+            height:82px;
             border-bottom: 1px solid #696976;
             cursor: pointer;
         }
@@ -37,6 +36,7 @@
             color: #333;
             text-align: center;
             line-height: 80px;
+            height:80px;
         }
 
         .el-main {
@@ -81,11 +81,10 @@
             display: inline-block;
             margin-right: 5px;
         }
-
     </style>
 </head>
 <body>
-<div id="app" class="winDiv">
+<div id="app" class="winDiv" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
     <el-container :style="{height:curHeight+'px'}">
         <el-header>
             <el-row>
@@ -96,77 +95,73 @@
             </el-row>
         </el-header>
         <el-main>
-            <el-container class="box" v-for="item in invoiceData">
-                <el-aside width="60px"><div class="circle"></div></el-aside>
-                <el-main style="text-align: left;">
-                    <el-row>
-                        <div class="nomal"><el-col :span="24"><span class="font-weight">票据类型：</span>{{item.TRADETYPE}}</el-col></div>
-                    </el-row>
-                    <el-row >
-                        <div class="big">
-                            <el-col :span="12">票据金额</el-col>
-                            <el-col :span="12" class="amount">￥{{item.AMOUNT}}</el-col>
-                        </div>
-                    </el-row>
-                    <el-row>
-                        <div class="nomal colors">
-                            <el-col :span="24"><span style="font-weight: bold;">交易日期：</span><span style="font-size: 13px;">{{item.TRADETIME}}</span></el-col>
-                        </div>
-                    </el-row>
-                </el-main>
-            </el-container>
+            <div v-for="item in invoiceData" @click="watchInvoice(item)">
+                <el-container class="box">
+                    <el-aside width="60px">
+                        <el-row><div class="big"><el-col :span="24">&nbsp;</el-col></div></el-row>
+                        <el-row><div class="nomal"><el-col :span="24"><div class="circle"></div></el-col></div></el-row>
+                        <el-row><div class="nomal"><el-col :span="24">&nbsp;</el-col></div></el-row>
 
+                    </el-aside>
+                    <el-main style="text-align: left;">
+                        <el-row>
+                            <div class="nomal"><el-col :span="24"><span class="font-weight">票据类型：</span>{{item.TRADETYPE}}</el-col></div>
+                        </el-row>
+                        <el-row >
+                            <div class="big">
+                                <el-col :span="12">票据金额</el-col>
+                                <el-col :span="12" class="amount">￥{{item.AMOUNT}}</el-col>
+                            </div>
+                        </el-row>
+                        <el-row>
+                            <div class="nomal colors">
+                                <el-col :span="24"><span style="font-weight: bold;">交易日期：</span><span style="font-size: 13px;">{{item.TRADETIME}}</span></el-col>
+                            </div>
+                        </el-row>
+                    </el-main>
+                </el-container>
+            </div>
+            <div v-if="invoiceData.length==0" style="text-align: center;">无数据</div>
         </el-main>
     </el-container>
+    <el-dialog title="日期范围" :visible.sync="dialogVisible" width="100%" :before-close="handleClose" :close-on-click-modal="false">
+        <el-form :form="form" size="mini">
+            <el-form-item>
+                <el-col :span="9">
+                    <el-date-picker type="date" placeholder="选择时间" v-model="form.starttime" style="width: 100%;"></el-date-picker>
+                </el-col>
+                <el-col class="line" :span="1">&nbsp;-</el-col>
+                <el-col :span="9">
+                    <el-date-picker type="date" placeholder="选择时间" v-model="form.endtime" style="width: 100%;"></el-date-picker>
+                </el-col>
+                <el-col :span="3" style="padding: 0 5px;">
+                    <el-button type="primary" @click="dateRangeQueryInvoice">确定</el-button>
+                </el-col>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
 </div>
 <script type="text/javascript">
-    var datas = {
-        strInJson:'{"head":{"tradetime": "2020-05-09 13:44:48","tradename": "JYMXXX","chanel":"3"},"body":{"cardno": "Z00001946","idcardno": "330328197302194420","starttime": "2020-05-12 12:12:48","endtime":"2020-05-14 23:59:59"}}'
-    }
-    $.post("http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData",datas,
-        function(data){
-            //$('#msg').html("please enter the email!");
-            alert(data);
-        },"text");//这里返回的类型有：json,html,xml,text
-
-
-
-//$.ajax({
-//    //几个参数需要注意一下
-//    type: "POST",//方法类型
-//    dataType: "application/x-www-form-urlencoded",//预期服务器返回的数据类型
-//    url: "http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData" ,//url
-//    data: data,
-//    success: function (result) {
-//        console.log(result);//打印服务端返回的数据(调试用)
-//        if (result.resultCode == 200) {
-//            alert("SUCCESS");
-//        };
-//    },
-//    error : function() {
-//        alert("异常！");
-//    }
-//});
     new Vue({
         el: '#app',
         data: {
-            msg:123,
+            popperClass:'popper-class',
+            dialogVisible:false,
+            loading:false,
             curHeight:500,
             currentDate:new Date(),
             starttime:'',
             endtime:'',
-            invoiceData:[{
-                TRADETYPE:'门诊',
-                TRADETIME:'2020年05月14日 13:44:48',
-                AMOUNT:18,
-            },{
-                TRADETYPE:'门诊',
-                TRADETIME:'2020年05月09日 09:23:56',
-                AMOUNT:108,
-            }]
+            invoiceData:[],
+            form:{
+                starttime:'',
+                endtime:'',
+                dateRange:''
+            },
         },
         mounted(){
-            this.beforeMountHeight()
+            this.beforeMountHeight();
+            this.queryInvoice('1');
         },
         methods:{
             beforeMountHeight:function(height){
@@ -175,7 +170,7 @@
                 this.curHeight = h-height;
             },
             queryInvoice:function(type){
-                debugger;
+
                 switch (type){
                     case '1':
                         this.setDateRange(7);
@@ -186,11 +181,72 @@
                     case '3':
                         this.setMonth(6);
                         break;
-                    case '4':break;
+                    case '4':
+                        this.form.dateRange='';
+                        this.dialogVisible = true;
+                        break;
                     default:break;
                 }
-                console.info(this.starttime);
-                console.info(this.endtime);
+                if(type!='4'){
+                    this.loading = true;
+                    var params={
+                        starttime:this.starttime,
+                        endtime:this.endtime
+                    }
+                    debugger;
+                    this.requestData(params);
+                }
+
+            },
+            watchInvoice:function(item){
+                debugger;
+                this.loading = true;
+                var me= this;
+                $.ajax({
+                    type: "POST",//方法类型
+                    url: "/invoice/queryInvoiceItemInfo.html",
+                    dataType: "json",
+                    data:item,
+                    success: function(data) {//返回页面内容
+                        me.loading=false;
+                        var body = data.message;
+                        if(body.errcode=='1'){
+                            window.location.href='/invoice/iframe.html';
+                        }else{
+                            me.myMessage(body.info.errinfo,'warning');
+                        }
+                    },
+                    error:function(XMLHttpRequest, strError, strObj){
+                        me.loading=false;
+                        me.myMessage('获取发票信息失败','warning');
+                    }
+                })
+
+            },
+            handleClose:function(){
+                this.dialogVisible = false;
+            },
+            requestData:function(params){
+                const me = this;
+                $.ajax({
+                    type: "POST",//方法类型
+                    url: "/invoice/queryInvoiceInfo.html",
+                    dataType: "json",
+                    data:params,
+                    success: function(data) {//返回页面内容
+                        var body = data.message;
+                        if(body.errcode=='1'){
+                            me.invoiceData=eval(body.info.tradeinfo);
+                        }else{
+                            me.myMessage('获取发票信息失败','warning');
+                        }
+                        me.loading=false;
+                    },
+                    error:function(XMLHttpRequest, strError, strObj){
+                        me.loading=false;
+                        me.myMessage('获取发票信息失败','warning');
+                    }
+                })
             },
             setDateRange:function(n){
                 var date = this.currentDate;
@@ -235,6 +291,46 @@
                     time+= ' 23:59:59';
                 }
                 return time;
+            },
+            dateRangeQueryInvoice:function(){
+                this.dialogVisible = false;
+                if(!this.form.starttime||!this.form.endtime){
+                    return;
+                }
+                var startTime = new Date(this.form.starttime).getTime();
+                var endTime = new Date(this.form.endtime).getTime();
+                if(startTime>endTime){
+                    this.starttime=this.rangeDateToString(this.form.endtime);
+                    this.endtime=this.rangeDateToString(this.form.starttime,true);
+                }else{
+                    this.starttime=this.rangeDateToString(this.form.starttime);
+                    this.endtime=this.rangeDateToString(this.form.endtime,true);
+                }
+                this.loading = true;
+                var params={
+                    starttime:this.starttime,
+                    endtime:this.endtime
+                };
+                this.requestData(params);
+            },
+            rangeDateToString:function(date,full){
+                let d = new Date(date);
+                let resDate = d.getFullYear() + '-' + this.p((d.getMonth() + 1)) + '-' + this.p(d.getDate());
+                if(full){
+                    resDate+=' 23:59:59';
+                }else{
+                    resDate+=' 00:00:00';
+                }
+                return resDate;
+            },
+            p:function(s) {
+                return s < 10 ? '0' + s : s
+            },
+            myMessage:function(msg,type){
+                this.$message({
+                    message: msg,
+                    type: type
+                });
             }
 
         }

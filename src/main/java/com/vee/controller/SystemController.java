@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.alibaba.fastjson.JSON;
+import com.vee.inter.Constants;
+import com.vee.utils.DateUtil;
 import com.vee.utils.HttpUtils;
 import com.vee.utils.XmlAndString;
 import org.springframework.stereotype.Controller;
@@ -22,19 +24,53 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class SystemController extends JSONOutputMVCConroller {
 	private static String CODE = "200";
 	private static String MSG = "success";
-	private static String WS_URL = "http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData";
+//	private static String WS_URL = "http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData";
+	private static String WS_URL = "http://192.168.40.19:8082/WebInvoice.asmx/InvoiceTransData";
+	private static String WS_BASE_URL = "http://192.168.40.19:8082/WebInvoice.asmx/ValidateBasicInfo";
+	private static String[] INVOICE_TYPE = {"JYMXXX","KPQQ"};
+	private static String[] CHANELS={"1","2","3"};
+	private static String CHANEL_ITEM = "1";
 	@RequestMapping(value = "/index", method = {RequestMethod.GET,RequestMethod.POST})
 	public String showBlogs(HttpServletRequest req,HttpServletResponse res) {
 		String platformType = req.getParameter("platformType");
 		if(platformType==null || "1".equals(platformType)){
 			req.getSession().setAttribute("idCardNo",req.getParameter("idCardNo"));
 			req.getSession().setAttribute("cardNo",req.getParameter("cardNo"));
-//			req.setAttribute("idCardNo",req.getParameter("idCardNo"));
-//			req.setAttribute("cardNo",req.getParameter("cardNo"));
 			return "index";
 		}else{
 			return "form";
 		}
+	}
+
+	@RequestMapping(value="/checkIdCardNo",method = {RequestMethod.GET,RequestMethod.POST})
+	@ResponseBody
+	public void checkIdCardNo(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		boolean flag = false;
+		String idCardNo = req.getParameter("idCardNo")==null?"":req.getParameter("idCardNo");
+		String idCardName = req.getParameter("name")==null?"":req.getParameter("name");
+		StringBuffer sb = new StringBuffer(0);
+		sb.append("strInJson={\"").append("head\":{");
+		sb.append("\"tradetime\":").append("\"").append(DateUtil.getDateFormatter()).append("\",");
+		sb.append("\"tradename\":\"").append(INVOICE_TYPE[0]).append("\",");
+		sb.append("\"chanel\":\"1\"},");
+		sb.append("\"body\":{").append("\"name\":\"").append(idCardName).append("\",");
+		sb.append("\"idcardno\":\"").append(idCardNo).append("\"}}");
+		String xmlStr = HttpUtils.httpPostWs(WS_BASE_URL,sb.toString());
+		String jsonString="";
+		if(xmlStr!=""){
+			jsonString = XmlAndString.stringxmlToString(xmlStr,"/string");
+			System.out.println(jsonString);
+		}
+		if(jsonString==""){
+			jsonString = "{\"message\":{\"errcode\":\"0\",\"info\":false}}";
+		}
+		Map<String,Object> map = JSON.parseObject(jsonString,Map.class);
+		Map<String,Object> messageMap = (Map<String, Object>) map.get("message");
+		if("1".equals(messageMap.get("errcode"))){
+			Map<String,Object> info = (Map<String, Object>) messageMap.get("info");
+			flag = Boolean.parseBoolean(info.get("tradeinfo").toString());
+		}
+		jsonOutput(res, flag,false);
 	}
 
 	@RequestMapping(value="/queryInvoiceInfo",method = RequestMethod.POST)
@@ -50,16 +86,12 @@ public class SystemController extends JSONOutputMVCConroller {
 		String endtime = req.getParameter("endtime");
 //		idCardNo="330328197302194420";
 //		cardNo="Z00001946";
-//        String params = "strInJson={\"head\":{\"tradetime\": \"2020-05-09 13:44:48\",\"tradename\": \"JYMXXX\",\"chanel\":\"3\"},\"body\":{\"cardno\": \"Z00001946\",\"idcardno\": \"330328197302194420\",\"starttime\": \"2020-05-12 12:12:48\",\"endtime\":\"2020-05-14 23:59:59\"}}";
-//		String strJson = "strInJson={\"head\":{\"tradetime\": \"2020-05-14 14:24:48\",\"tradename\": \"KPQQ\",\"chanel\":\"3\"},\"body\":{\"serialno\":\"81339577\",\"patienttype\": \"门诊\"}}";
-//		String strJson1 = "strInJson={\"head\":{\"tradetime\": \"2020-05-09 13:44:48\",\"tradename\": \"JYMXXX\",\"chanel\":\"3\"},\"body\":{\"cardno\": \"Z00001946\",\"idcardno\": \"310104199011021111\",\"starttime\": \"2019-12-20 12:12:48\",\"endtime\":\"2019-12-27 23:59:59\"}}";
-//		{"head":{"tradetime": "2020-05-09 13:44:48","tradename": "JYMXXX","chanel":"3"},"body":{"cardno": "Z00001946","idcardno": "330328197302194420","starttime": "2020-05-12 12:12:48","endtime":"2020-05-14 23:59:59"}}
 		Map<String,Object> data = new HashMap<String,Object>();
 		Map<String,Object> headMap = new HashMap<String,Object>();
 		Calendar cal = Calendar.getInstance();
 		headMap.put("tradetime",cal.get(Calendar.YEAR)+"-01-01 00:00:00");
-		headMap.put("tradename","JYMXXX");
-		headMap.put("chanel","3");
+		headMap.put("tradename",INVOICE_TYPE[0]);
+		headMap.put("chanel",CHANEL_ITEM);
 		data.put("head",headMap);
 		Map<String,Object> bodyMap = new HashMap<String,Object>();
 		bodyMap.put("cardno",cardNo);
@@ -85,26 +117,12 @@ public class SystemController extends JSONOutputMVCConroller {
 	@ResponseBody
 	public void queryInvoiceItemInfo(HttpServletRequest req,HttpServletResponse res) throws Exception{
 		StringBuffer sb = new StringBuffer(0);
-//		{"head":{"tradetime":"2020-04-30 08:24:40","tradename":"KPQQ","chanel":"3"},
-// "body":{"serialno":"81239017","patienttype":"门诊"}}
 		sb.append("strInJson={\"").append("head\":{");
 		sb.append("\"tradetime\":").append("\"").append(req.getParameter("TRADETIME")).append("\",");
-		sb.append("\"tradename\":").append("\"KPQQ\",");
-		sb.append("\"chanel\":").append("\"3\"},");
+		sb.append("\"tradename\":\"").append(INVOICE_TYPE[1]).append("\",");
+		sb.append("\"chanel\":\"3\"},");
 		sb.append("\"body\":{").append("\"serialno\":\"").append(req.getParameter("SERIALNO")).append("\",");
 		sb.append("\"patienttype\":\"").append(req.getParameter("TRADETYPE")).append("\"}}");
-//		Map<String,Object> data = new HashMap<String,Object>();
-//		Map<String,Object> headMap = new HashMap<String,Object>();
-//		headMap.put("tradetime",req.getParameter("TRADETIME"));
-//		headMap.put("tradename","KPQQ");
-//		headMap.put("chanel","3");
-//		data.put("head",headMap);
-//		Map<String,Object> bodyMap = new HashMap<String,Object>();
-//		bodyMap.put("serialno",req.getParameter("SERIALNO"));
-//		bodyMap.put("patienttype",req.getParameter("TRADETYPE"));
-//		data.put("body",bodyMap);
-//		String reqStr = "strInJson="+JSON.toJSONString(data);
-//		String strJson = "strInJson={\"head\":{\"tradetime\": \"2020-05-14 14:24:48\",\"tradename\": \"KPQQ\",\"chanel\":\"3\"},\"body\":{\"serialno\":\"81339577\",\"patienttype\": \"门诊\"}}";
 		String xmlStr = HttpUtils.httpPostWs(WS_URL,sb.toString());
 		String jsonString="";
 		if(xmlStr!=""){
@@ -140,12 +158,54 @@ public class SystemController extends JSONOutputMVCConroller {
 		}
 		return "layout";
 	}
+	@RequestMapping(value="/show",method = RequestMethod.GET)
+	public String showInvoice(HttpServletRequest req,HttpServletResponse res,ModelMap model) {
+		String str = req.getParameter("p");
+		String patienttype = this.codeToName(str.substring(0,2));
+		String serialno = str.substring(2,str.length());
+
+		StringBuffer sb = new StringBuffer(0);
+		sb.append("strInJson={\"").append("head\":{");
+		sb.append("\"tradetime\":").append("\"").append(DateUtil.getDateFormatter()).append("\",");
+		sb.append("\"tradename\":\"").append(INVOICE_TYPE[1]).append("\",");
+		sb.append("\"chanel\":\"3\"},");
+		sb.append("\"body\":{").append("\"serialno\":\"").append(serialno).append("\",");
+		sb.append("\"patienttype\":\"").append(patienttype).append("\"}}");
+
+		String xmlStr = HttpUtils.httpPostWs(WS_URL,sb.toString());
+		String jsonString="";
+		if(xmlStr!=""){
+			jsonString = XmlAndString.stringxmlToString(xmlStr,"/string");
+			System.out.println(jsonString);
+		}
+		if(jsonString==""){
+			jsonString = "{\"message\":{\"errcode\":\"0\",\"info\":{\"errinfo\":\"不能识别请求中的开票条件！\"}}}";
+		}
+		Map<String,Object> map = JSON.parseObject(jsonString,Map.class);
+		Map<String,Object> messageMap = (Map<String, Object>) map.get("message");
+		if("1".equals(messageMap.get("errcode"))){
+			Map<String,Object> info = (Map<String, Object>) messageMap.get("info");
+			req.getSession().setAttribute("qrCodeUrl",info.get("url"));
+		}else{
+			return "show_invoice_error";
+		}
+		return "show_invoice";
+	}
+	private String codeToName(String code){
+		String name = "门诊";
+		if(code.equalsIgnoreCase(Constants.MZ)){
+			name = "门诊";
+		}else if(code.equalsIgnoreCase(Constants.ZY)){
+			name = "住院";
+		}
+		return name;
+	}
 	@RequestMapping(value="/iframe",method = RequestMethod.GET)
 	public String iframe(HttpServletRequest req,HttpServletResponse res) {
-		if(!checkBrowser(req)){
-			System.out.println("It's not weixin's browser");
-			return "illegal";
-		}
+//		if(!checkBrowser(req)){
+//			System.out.println("It's not weixin's browser");
+//			return "illegal";
+//		}
 		req.setAttribute("url",req.getSession().getAttribute("url"));
 		return "invoice";
 	}

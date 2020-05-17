@@ -145,8 +145,7 @@
             },
             rules: {
                 name: [
-                    { required: true, message: '请输入姓名', trigger: 'blur' },
-                    { min: 3, max: 5, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+                    { required: true, message: '请输入姓名', trigger: 'blur' }
                 ],
                 idCardNo: [
                     { required: true, message: '请输入身份证', trigger: 'blur' },
@@ -178,9 +177,27 @@
                 this.$refs[formName].resetFields();
             },
             queryInvoiceByIdCard:function(formName){
+                const me = this;
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        window.location.href='/invoice/index.html?idCardNo='+this.ruleForm.idCardNo;
+                        const me= this;
+                        $.ajax({
+                            type:'POST',
+                            url: "/invoice/checkIdCardNo.html",
+                            dataType: "json",
+                            data:this.ruleForm,
+                            success: function(data) {//返回页面内容
+                                if(data){
+                                    window.location.href='/invoice/index.html?idCardNo='+me.ruleForm.idCardNo;
+                                }else{
+                                    me.myMessage('身份证和名字不匹配','error');
+                                }
+                            },
+                            error:function(XMLHttpRequest, strError, strObj){
+                                me.myMessage('身份证验证异常','error')
+                            }
+                        })
+
                     } else {
                         console.log('error submit!!');
                         return false;
@@ -196,19 +213,7 @@
                 });
             },
             requestData:function(params){
-                $.ajax({
-                    url: "/invoice/index.html",
-                    dataType: "html",
-                    data:params,
-                    success: function(data) {//返回页面内容
-                        debugger;
-                    },
-                    error:function(XMLHttpRequest, strError, strObj){
-                        console.log("XMLHttpRequest:"+XMLHttpRequest);
-                        console.log("strError:"+strError);
-                        console.log("strObj:"+strObj);
-                    }
-                })
+
             },
             beforeMountHeight:function(){
                 let h = document.documentElement.clientHeight || document.body.clientHeight;
