@@ -188,7 +188,7 @@
                             data:this.ruleForm,
                             success: function(data) {//返回页面内容
                                 if(data){
-                                    window.location.href='/invoice/index.html?idCardNo='+me.ruleForm.idCardNo;
+                                    window.location.href='/invoice/index.html?platformType=2&idCardNo='+me.ruleForm.idCardNo;
                                 }else{
                                     me.myMessage('身份证和名字不匹配','error');
                                 }

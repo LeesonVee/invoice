@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSON;
 import com.vee.inter.Constants;
 import com.vee.utils.DateUtil;
 import com.vee.utils.HttpUtils;
+import com.vee.utils.RsaUtils;
 import com.vee.utils.XmlAndString;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -31,15 +32,38 @@ public class SystemController extends JSONOutputMVCConroller {
 	private static String[] CHANELS={"1","2","3"};
 	private static String CHANEL_ITEM = "1";
 	@RequestMapping(value = "/index", method = {RequestMethod.GET,RequestMethod.POST})
-	public String showBlogs(HttpServletRequest req,HttpServletResponse res) {
+	public String showBlogs(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		String idCardNo=null;
 		String platformType = req.getParameter("platformType");
 		if(platformType==null || "1".equals(platformType)){
-			req.getSession().setAttribute("idCardNo",req.getParameter("idCardNo"));
+			String appId=req.getParameter("AppId");
+			String loginCode=req.getParameter("LoginCode");
+			if(appId==null || loginCode==null){
+				throw new Exception("入参错误");
+			}
+			Map<String,String> cardMap =RsaUtils.getIdCardNo(appId,loginCode);
+			if(cardMap.isEmpty() || "1".equals(cardMap.get("code"))){
+				return "index_error";
+			}
+			idCardNo = cardMap.get("idCardNo");
+			if(idCardNo==null || "".equals(idCardNo)){
+				return "index_error";
+			}
+			req.getSession().setAttribute("idCardNo",idCardNo);
 			req.getSession().setAttribute("cardNo",req.getParameter("cardNo"));
 			return "index";
-		}else{
-			return "form";
+		}else if("2".equals(platformType)){
+			idCardNo = req.getParameter("idCardNo");
+			if(idCardNo==null || "".equals(idCardNo)){
+				return "form";
+			}else{
+				req.getSession().setAttribute("idCardNo",idCardNo);
+				req.getSession().setAttribute("cardNo",req.getParameter("cardNo"));
+				return "index";
+			}
+
 		}
+		return "form";
 	}
 
 	@RequestMapping(value="/checkIdCardNo",method = {RequestMethod.GET,RequestMethod.POST})
@@ -70,6 +94,7 @@ public class SystemController extends JSONOutputMVCConroller {
 			Map<String,Object> info = (Map<String, Object>) messageMap.get("info");
 			flag = Boolean.parseBoolean(info.get("tradeinfo").toString());
 		}
+		flag = true;
 		jsonOutput(res, flag,false);
 	}
 
