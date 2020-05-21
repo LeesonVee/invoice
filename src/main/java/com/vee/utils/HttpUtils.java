@@ -1,6 +1,5 @@
 package com.vee.utils;
 
-import com.sun.deploy.net.HttpResponse;
 
 import java.io.*;
 import java.net.HttpURLConnection;

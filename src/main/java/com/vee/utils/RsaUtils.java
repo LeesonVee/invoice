@@ -41,7 +41,7 @@ public class RsaUtils {
         signStr.append("corpid=").append(Constants.CORP_ID).append("&timestamp=").append(timestamp);
         String sign=Signature.rsaSign(signStr.toString(), Constants.PRI_KEY, "UTF-8");
         signStr.append("&sign=").append(sign);
-        String url="https://openapi.cmsfg.com/api/user/userappuser?"+signStr.toString();
+        String url=Constants.CARD_URL+signStr.toString();
         StringBuffer body = new StringBuffer(0);
         body.append("{\"method\":\"GetUserAllRelateInfoForOut\",");
         body.append("\"params\":[{\"AppId\":\"").append(priEncode(appId)).append("\",");
@@ -58,7 +58,7 @@ public class RsaUtils {
             List<Map<String,Object>> cards = (List<Map<String, Object>>) map.get("Cards");
             for(Map<String,Object> temp:cards){
                 if("1".equals(temp.get("IsMain").toString())){
-                    idCardNo = temp.get("IDCard").toString();
+                    idCardNo = priDecode(temp.get("IDCard").toString());
                     break;
                 }
             }

@@ -28,6 +28,7 @@ public class SystemController extends JSONOutputMVCConroller {
 //	private static String WS_URL = "http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData";
 	private static String WS_URL = "http://192.168.40.19:8082/WebInvoice.asmx/InvoiceTransData";
 	private static String WS_BASE_URL = "http://192.168.40.19:8082/WebInvoice.asmx/ValidateBasicInfo";
+//	private static String WS_BASE_URL = "http://webservice.sptdch.cn:8082/WebInvoice.asmx/ValidateBasicInfo";
 	private static String[] INVOICE_TYPE = {"JYMXXX","KPQQ"};
 	private static String[] CHANELS={"1","2","3"};
 	private static String CHANEL_ITEM = "1";

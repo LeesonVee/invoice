@@ -124,9 +124,8 @@
         </el-form>
     </el-row>
     <el-row><el-col :span="24" style="text-align: center;"><el-button type="primary" style="width: 80%;" @click="queryInvoiceByIdCard('ruleForm')">查询</el-button></el-col></el-row>
-    <el-row class="remark remark_top"><el-col :span="24">1.系统提供本院自2020年5月22日之后的电子票据查询功能。&nbsp;&nbsp;</el-col></el-row>
-    <el-row class="remark"><el-col :span="24">2.如需查验电子票据,可通过财政部财政电子票据查验平台http://pjcy.mof.gov.cn/进行。</el-col></el-row>
-    <el-row class="remark"><el-col :span="24">3.也可通过关注上海普陀健康公众号查询电子票据。&nbsp;&nbsp;</el-col></el-row>
+    <el-row class="remark remark_top"><el-col :span="24">1.如需查验电子票据,可通过财政部财政电子票据查验平台http://pjcy.mof.gov.cn/进行。</el-col></el-row>
+    <el-row class="remark"><el-col :span="24">2.也可通过关注上海普陀健康公众号查询电子票据。&nbsp;&nbsp;</el-col></el-row>
 </div>
 <script type="text/javascript">
     new Vue({
