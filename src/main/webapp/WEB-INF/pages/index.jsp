@@ -273,11 +273,11 @@
                 var month = (date.getMonth()+1);
                 var day = date.getDate();
                 this.endtime=this.dateToString(year,month,day);
-                if(month>n){
-                    this.starttime=this.dateToString(year,month-n,day,true);
-                }else{
-                    this.starttime=this.dateToString(year-1,12+month-n,day,true);
-                }
+                date.setMonth(date.getMonth()-n);
+                var y = date.getFullYear();
+                var m = date.getMonth()+1;
+                var d = date.getDate();
+                this.starttime=this.dateToString(y,m,d,true);
             },
             dateToString:function(year,month,day,isStart){
                 var time=year+'-';
