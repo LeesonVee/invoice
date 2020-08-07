@@ -1,9 +1,7 @@
 package com.vee.controller;
 
-import java.io.PrintWriter;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,54 +13,70 @@ import com.vee.utils.DateUtil;
 import com.vee.utils.HttpUtils;
 import com.vee.utils.RsaUtils;
 import com.vee.utils.XmlAndString;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sun.misc.BASE64Decoder;
 
 @Controller
 public class SystemController extends JSONOutputMVCConroller {
+	private static final Logger logger = LoggerFactory.getLogger(SystemController.class);
 	private static String CODE = "200";
 	private static String MSG = "success";
-//	private static String WS_URL = "http://webservice.sptdch.cn:8082/WebInvoice.asmx/InvoiceTransData";
-	private static String WS_URL = "http://192.168.40.19:8082/WebInvoice.asmx/InvoiceTransData";
-	private static String WS_BASE_URL = "http://192.168.40.19:8082/WebInvoice.asmx/ValidateBasicInfo";
-//	private static String WS_BASE_URL = "http://webservice.sptdch.cn:8082/WebInvoice.asmx/ValidateBasicInfo";
 	private static String[] INVOICE_TYPE = {"JYMXXX","KPQQ"};
-	private static String[] CHANELS={"1","2","3"};
-	private static String CHANEL_ITEM = "1";
+
+	@Value("${ws_url}")
+	private String WS_URL;
+	@Value("${ws_base_url}")
+	private String WS_BASE_URL;
+	@Value("${chanel_item}")
+	private String CHANEL_ITEM;
+
 	@RequestMapping(value = "/index", method = {RequestMethod.GET,RequestMethod.POST})
 	public String showBlogs(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		logger.info("进入showBlogs方法...");
 		String idCardNo=null;
 		String platformType = req.getParameter("platformType");
 		if(platformType==null || "1".equals(platformType)){
 			String appId=req.getParameter("AppId");
 			String loginCode=req.getParameter("LoginCode");
 			if(appId==null || loginCode==null){
+				logger.error("appId=【"+appId+"】,loginCode=【"+loginCode+"】");
 				throw new Exception("入参错误");
 			}
 			Map<String,String> cardMap =RsaUtils.getIdCardNo(appId,loginCode);
 			if(cardMap.isEmpty() || "1".equals(cardMap.get("code"))){
+				logger.error("解析身份信息失败："+JSON.toJSONString(cardMap));
 				return "index_error";
 			}
 			idCardNo = cardMap.get("idCardNo");
 			if(idCardNo==null || "".equals(idCardNo)){
+				logger.error("无有效身份信息");
 				return "index_error";
 			}
+			logger.info("身份证号码："+idCardNo);
 			req.getSession().setAttribute("idCardNo",idCardNo);
 			req.getSession().setAttribute("cardNo",req.getParameter("cardNo"));
 			return "index";
 		}else if("2".equals(platformType)){
 			idCardNo = req.getParameter("idCardNo");
 			if(idCardNo==null || "".equals(idCardNo)){
+				logger.error("身份证信息为空");
 				return "form";
 			}else{
+				logger.info("身份证号码："+idCardNo);
 				req.getSession().setAttribute("idCardNo",idCardNo);
 				req.getSession().setAttribute("cardNo",req.getParameter("cardNo"));
 				return "index";
 			}
-
 		}
 		return "form";
 	}
@@ -70,9 +84,11 @@ public class SystemController extends JSONOutputMVCConroller {
 	@RequestMapping(value="/checkIdCardNo",method = {RequestMethod.GET,RequestMethod.POST})
 	@ResponseBody
 	public void checkIdCardNo(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		logger.info("进入checkIdCardNo方法...");
 		boolean flag = false;
 		String idCardNo = req.getParameter("idCardNo")==null?"":req.getParameter("idCardNo");
 		String idCardName = req.getParameter("name")==null?"":req.getParameter("name");
+		logger.info("身份证号码："+idCardNo);
 		StringBuffer sb = new StringBuffer(0);
 		sb.append("strInJson={\"").append("head\":{");
 		sb.append("\"tradetime\":").append("\"").append(DateUtil.getDateFormatter()).append("\",");
@@ -102,16 +118,16 @@ public class SystemController extends JSONOutputMVCConroller {
 	@RequestMapping(value="/queryInvoiceInfo",method = RequestMethod.POST)
 	@ResponseBody
 	public void queryInvoiceInfo(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		logger.info("进入queryInvoiceInfo方法...");
 		HttpSession session = req.getSession();
 		if(session.getAttribute("idCardNo")==null){
 			throw new Exception("身份证信息不能为空");
 		}
 		String idCardNo = session.getAttribute("idCardNo").toString();
+		logger.info("身份证号码："+idCardNo);
 		String cardNo = session.getAttribute("cardNo")==null?"":session.getAttribute("cardNo").toString();
 		String starttime = req.getParameter("starttime");
 		String endtime = req.getParameter("endtime");
-//		idCardNo="330328197302194420";
-//		cardNo="Z00001946";
 		Map<String,Object> data = new HashMap<String,Object>();
 		Map<String,Object> headMap = new HashMap<String,Object>();
 		Calendar cal = Calendar.getInstance();
@@ -142,6 +158,11 @@ public class SystemController extends JSONOutputMVCConroller {
 	@RequestMapping(value="/queryInvoiceItemInfo",method = RequestMethod.POST)
 	@ResponseBody
 	public void queryInvoiceItemInfo(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		logger.info("进入queryInvoiceItemInfo方法...");
+		logger.info("身份证号码："+req.getSession().getAttribute("idCardNo"));
+		List<String> imgs = new ArrayList<String>();
+		Map<String,Object> result = new HashMap<String, Object>();
+		this.resMap(result);
 		StringBuffer sb = new StringBuffer(0);
 		sb.append("strInJson={\"").append("head\":{");
 		sb.append("\"tradetime\":").append("\"").append(req.getParameter("TRADETIME")).append("\",");
@@ -153,7 +174,7 @@ public class SystemController extends JSONOutputMVCConroller {
 		String jsonString="";
 		if(xmlStr!=""){
 			jsonString = XmlAndString.stringxmlToString(xmlStr,"/string");
-			System.out.println(jsonString);
+			logger.info("获取发票URL返回数据："+jsonString);
 		}
 		if(jsonString==""){
 			jsonString = "{\"message\":{\"errcode\":\"0\",\"info\":{\"errinfo\":\"不能识别请求中的开票条件！\"}}}";
@@ -163,59 +184,79 @@ public class SystemController extends JSONOutputMVCConroller {
 		Map<String,Object> messageMap = (Map<String, Object>) map.get("message");
 		if("1".equals(messageMap.get("errcode"))){
 			Map<String,Object> info = (Map<String, Object>) messageMap.get("info");
-			req.getSession().setAttribute("url",info.get("url"));
-		}
-		jsonOutput(res, JSON.parseObject(jsonString),false);
-
-	}
-	@RequestMapping(value="/MP_verify_JgGJflv1sgAzxyio",method = RequestMethod.GET)
-	@ResponseBody
-	public void readTxt(HttpServletRequest req,HttpServletResponse res) throws Exception{
-		PrintWriter out = res.getWriter();
-		out.print("JgGJflv1sgAzxyio");
-		out.flush();
-		out.close();
-	}
-	@RequestMapping(value="/layout",method = RequestMethod.GET)
-	public String layoutPage(HttpServletRequest req,HttpServletResponse res,ModelMap model) {
-		if(!checkBrowser(req)){
-			System.out.println("It's not weixin's browser");
-			return "illegal";
-		}
-		return "layout";
-	}
-	@RequestMapping(value="/show",method = RequestMethod.GET)
-	public String showInvoice(HttpServletRequest req,HttpServletResponse res,ModelMap model) {
-		String str = req.getParameter("p");
-		String patienttype = this.codeToName(str.substring(0,2));
-		String serialno = str.substring(2,str.length());
-
-		StringBuffer sb = new StringBuffer(0);
-		sb.append("strInJson={\"").append("head\":{");
-		sb.append("\"tradetime\":").append("\"").append(DateUtil.getDateFormatter()).append("\",");
-		sb.append("\"tradename\":\"").append(INVOICE_TYPE[1]).append("\",");
-		sb.append("\"chanel\":\"3\"},");
-		sb.append("\"body\":{").append("\"serialno\":\"").append(serialno).append("\",");
-		sb.append("\"patienttype\":\"").append(patienttype).append("\"}}");
-
-		String xmlStr = HttpUtils.httpPostWs(WS_URL,sb.toString());
-		String jsonString="";
-		if(xmlStr!=""){
-			jsonString = XmlAndString.stringxmlToString(xmlStr,"/string");
-			System.out.println(jsonString);
-		}
-		if(jsonString==""){
-			jsonString = "{\"message\":{\"errcode\":\"0\",\"info\":{\"errinfo\":\"不能识别请求中的开票条件！\"}}}";
-		}
-		Map<String,Object> map = JSON.parseObject(jsonString,Map.class);
-		Map<String,Object> messageMap = (Map<String, Object>) map.get("message");
-		if("1".equals(messageMap.get("errcode"))){
-			Map<String,Object> info = (Map<String, Object>) messageMap.get("info");
-			req.getSession().setAttribute("qrCodeUrl",info.get("url"));
+			if(info.get("url")!=null){
+				imgs = this.getImgPaths(info.get("url").toString());
+			}
 		}else{
-			return "show_invoice_error";
+			result.put("msg","无发票明细");
 		}
-		return "show_invoice";
+		result.put("body",imgs);
+		jsonOutput(res, result,false);
+	}
+	private List<String> getImgPaths(String invoiceUrl){
+		List<String> imgPaths = new ArrayList<String>();
+		try {
+			String busData = "";
+			Document document = Jsoup.connect(invoiceUrl).get();
+			Elements els = document.select("script");
+			for(Element el:els){
+				String content = el.data();
+				if(content.contains("busData") && content.contains("JSON.stringify(")){
+					busData = content.substring(content.indexOf("JSON.stringify(")+15,content.indexOf("\"});")+2);
+					break;
+				}
+			}
+			if(!"".equals(busData)){
+				String[] urls = invoiceUrl.split("/computerbill/");
+				StringBuffer url = new StringBuffer(urls[0]);
+				url.append("/computerbill/showData.do?");
+				Map<String,String> jsonMap = JSON.parseObject(busData,Map.class);
+				url.append("billBatchCode=").append(jsonMap.get("billBatchCode"));
+				url.append("&billNo=").append(jsonMap.get("billNo"));
+				String result = HttpUtils.doGet(url.toString());
+				if(result!=null && !"".equals(result)){
+					Map<String,Object> resultMap = JSON.parseObject(result,Map.class);
+					List<String> imgs = (List<String>) resultMap.get("picStr");
+					for(String img:imgs){
+						String path = this.generateImage(img);
+						if(path!=null && !"".equals(path)){
+							imgPaths.add(path);
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		return imgPaths;
+	}
+	private String generateImage(String imgStr) {// 对字节数组字符串进行Base64解码并生成图片
+		if (imgStr == null) // 图像数据为空
+			return null;
+		String tomcatBinPath = System.getProperty("user.dir");
+		String tomcatRootPath = tomcatBinPath.substring(0, tomcatBinPath.lastIndexOf(File.separator));
+		String imgFilePath = tomcatRootPath+File.separator+"webapps"+File.separator+"invoice"+File.separator+ "lib" + File.separator + "img"+ File.separator;
+		Calendar cal = Calendar.getInstance();
+		String fileName = cal.getTimeInMillis()+".png";
+		BASE64Decoder decoder = new BASE64Decoder();
+		try {
+			// Base64解码
+			byte[] bytes = decoder.decodeBuffer(imgStr);
+			for (int i = 0; i < bytes.length; ++i) {
+				if (bytes[i] < 0) {// 调整异常数据
+					bytes[i] += 256;
+				}
+			}
+			// 生成jpeg图片
+			OutputStream out = new FileOutputStream(imgFilePath+fileName);
+			out.write(bytes);
+			out.flush();
+			out.close();
+			return "/invoice/lib/img/"+fileName;
+		} catch (Exception e) {
+			logger.error("base64转图片失败:"+e.getMessage());
+			return null;
+		}
 	}
 	private String codeToName(String code){
 		String name = "门诊";
@@ -225,23 +266,6 @@ public class SystemController extends JSONOutputMVCConroller {
 			name = "住院";
 		}
 		return name;
-	}
-	@RequestMapping(value="/iframe",method = RequestMethod.GET)
-	public String iframe(HttpServletRequest req,HttpServletResponse res) {
-//		if(!checkBrowser(req)){
-//			System.out.println("It's not weixin's browser");
-//			return "illegal";
-//		}
-		req.setAttribute("url",req.getSession().getAttribute("url"));
-		return "invoice";
-	}
-	@RequestMapping(value="/jumpIndex",method = RequestMethod.GET)
-	public String jumpIndex(HttpServletRequest req,HttpServletResponse res,ModelMap model) {
-//		if(!checkBrowser(req)){
-//			System.out.println("It's not weixin's browser");
-//			return "illegal";
-//		}
-		return "form";
 	}
 	/**
 	 * 检验是否为微信浏览器
@@ -266,16 +290,12 @@ public class SystemController extends JSONOutputMVCConroller {
 	 * @return boolean
 	 * @date 2018年1月25日 13:44:55
 	 * */
-	private Map<String, Object> resMap(Map<String,Object> msgCodeMap){
-		Map<String, Object> map = new HashMap<String, Object>();
-		if(msgCodeMap.containsKey("body")){
-			map = msgCodeMap;
-		}else{
-			map.put("body", msgCodeMap);
+	private void resMap(Map<String,Object> msgCodeMap){
+		if(msgCodeMap==null){
+			msgCodeMap = new HashMap<String, Object>();
 		}
-		map.put("code", CODE);
-		map.put("msg", MSG);
-		return map;
+		msgCodeMap.put("code", CODE);
+		msgCodeMap.put("msg", MSG);
 	}
 	private boolean strIsEmpet(String str){
 		boolean flag = true;
